@@ -62,6 +62,39 @@ export async function supabase(path, { method = 'GET', accessToken, body, header
   return data;
 }
 
+export async function supabaseService(path, { method = 'GET', body, headers = {} } = {}) {
+  const { origin } = config();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) throw new ApiProblem('Checkout is not configured. Add the Supabase service-role key to Vercel server environment variables.', 503);
+  const response = await fetch(new URL(path, origin), {
+    method,
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...headers,
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    signal: AbortSignal.timeout(12000),
+  });
+  const text = await response.text();
+  let data;
+  try { data = text ? JSON.parse(text) : null; }
+  catch { throw new ApiProblem('Supabase returned an invalid checkout response.', 502); }
+  if (!response.ok) {
+    const code = typeof data?.code === 'string' ? data.code : '';
+    const message = code === 'PGRST202' || code === '42883'
+      ? 'Supabase is missing checkout migration 004_test_checkout.sql. Apply it in the Supabase SQL Editor.'
+      : code === '42501'
+        ? 'Supabase denied checkout. Confirm the service-role key is configured correctly in Vercel.'
+        : typeof data?.message === 'string' && !/secret|token|key|authorization/i.test(data.message)
+          ? data.message.slice(0, 240)
+          : 'Supabase checkout request failed.';
+    throw new ApiProblem(message, response.status >= 500 ? 502 : 400);
+  }
+  return data;
+}
+
 export function parseBody(req) {
   if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
   if (typeof req.body === 'string') {

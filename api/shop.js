@@ -72,6 +72,9 @@ export default async function handler(req, res) {
     data.settings.bagDisplay = mediaUrl(data.settings.bagDisplay);
     data.settings.shoeDisplay = mediaUrl(data.settings.shoeDisplay);
     data.settings.displayGallery = gallery.map(mediaUrl);
+    data.mode = process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_test_') && process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? 'Paystack test'
+      : 'disabled';
     data.products = data.products.map(product => ({
       ...product,
       photo: mediaUrl(product.photo),
