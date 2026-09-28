@@ -1,0 +1,12 @@
+node_modules/
+.env
+data/*
+!data/.gitkeep
+netlify-site/
+.netlify/
+
+.env.*
+!.env.example
+.vercel/
+*.zip
+*.sqlite*
