@@ -10,9 +10,9 @@ Settings: Homepage display pictures has separate bag and slip-on uploads. These 
 
 Samples have been removed from the active local catalogues. The release ZIP contains no database, owner credentials, customer records or sample seed data. A newly started database is empty.
 
-## What this ZIP is
+## What is deployed
 
-This is the full source package, NOT a one-step Netlify Drop package. A Netlify-only static upload cannot run this Node/SQLite backend. You still need a persistent backend hosting account. No backend has been deployed or paid service purchased. The older preview ZIP does not provide these owner tools.
+The public site is hosted at `https://oreva-ashy.vercel.app`. Vercel serves the frontend and proxies `/api/*` and `/uploads/*` to the backend. The Node/SQLite backend needs a persistent disk, so it is not provided by this static Vercel deployment. No backend has been deployed or paid service purchased.
 
 ## Deploy the backend first
 
@@ -22,7 +22,7 @@ NODE_ENV=production
 HOST=0.0.0.0
 PORT=3100
 DATABASE_PATH=/app/data/store.sqlite
-BASE_URL=https://YOUR-SITE.netlify.app
+BASE_URL=https://oreva-ashy.vercel.app
 PAYMENT_ADAPTER=disabled
 EMAIL_ADAPTER=development
 OWNER_SETUP_CODE=<a private random value of at least 32 characters>
@@ -33,21 +33,16 @@ The production setup form requires that code, and closes once an owner exists. R
 
 Use /health as the health check. Keep logs private and do not log private order URLs. Back up the persistent disk/database securely. Restart the backend and confirm a test product/photo survives before relying on it.
 
-## Connect Netlify
+## Connect the Vercel site
 
-After your backend has its HTTPS URL, run from this extracted source folder in PowerShell:
+In Vercel, keep the project connected to this GitHub repository with the repository root as its Root Directory. Add `BACKEND_ORIGIN` as an environment variable for Production and Preview, using the backend's public HTTPS origin only (for example, `https://your-backend-host.example`, with no path or trailing slash). The included `vercel.json` proxies `/api/*` and `/uploads/*` through the Vercel site to that backend and serves the single-page app for other routes. Redeploy after adding or changing the variable.
 
-$env:BACKEND_ORIGIN='https://YOUR-BACKEND-HOST'
-node build-netlify.mjs
-
-Drag ONLY the generated netlify-site folder into Netlify Drop. It contains assets and proxy routes; never drag this entire source folder. Alternatively use Git/CLI deployment with the included netlify.toml and BACKEND_ORIGIN build variable. Netlify must proxy /api and /uploads to the backend; BASE_URL on the backend must exactly match your Netlify URL for CSRF checks and private order links.
-
-Then open https://YOUR-SITE.netlify.app/admin/setup and create your owner account with your setup code. Check sign-in, uploads, edit/delete, stock persistence and sign-out on your phone. These hosted proxy/session checks cannot be completed until the backend exists.
+The backend's `BASE_URL` must exactly equal `https://oreva-ashy.vercel.app` for origin checks, secure cookies, and private order links. Then open `https://oreva-ashy.vercel.app/admin/setup` and create your owner account with your setup code. Check sign-in, uploads, edit/delete, stock persistence and sign-out on your phone. These hosted proxy/session checks cannot be completed until the backend exists.
 
 ## Payments are a separate activation step
 
-To test checkout, configure Paystack TEST and Resend credentials according to README.md and switch PAYMENT_ADAPTER to paystack. Register the signed webhook at the Netlify origin /api/webhook/paystack. Live payment support remains deliberately disabled. Nothing in this package enables real charges.
+To test checkout, configure Paystack TEST and Resend credentials according to README.md and switch PAYMENT_ADAPTER to paystack. Register the signed webhook at `https://oreva-ashy.vercel.app/api/webhook/paystack`; Vercel forwards it to the backend. Live payment support remains deliberately disabled. Nothing in this package enables real charges.
 
 ## Verification
 
-42 automated tests passed after owner setup, catalogue deletion and disabled-checkout changes. Tests cover access controls, image sanitisation, concurrent reservations, duplicate/late payments, refunds, notification failures and persistence. Browser check confirmed four logo clicks open the login page and the setup form is available locally. Hosted Netlify/backend integration is not yet tested.
+42 automated tests passed after owner setup, catalogue deletion and disabled-checkout changes. Tests cover access controls, image sanitisation, concurrent reservations, duplicate/late payments, refunds, notification failures and persistence. Browser check confirmed four logo clicks open the login page and the setup form is available locally. Hosted Vercel/backend integration is not yet tested.

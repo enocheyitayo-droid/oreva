@@ -1,6 +1,6 @@
 # Latest verification
 
-42 automated tests passed for the current owner release. Four-click logo navigation and first-time owner setup page were checked in the browser. Netlify plus persistent-backend deployment is not yet configured or tested.
+42 automated tests passed for the current owner release. Four-click logo navigation and first-time owner setup page were checked in the browser. Vercel's persistent-backend proxy is not yet configured or tested.
 
 # Verification report
 

@@ -4,7 +4,7 @@ Read [START-HERE.md](START-HERE.md) first for current deployment limitations.
 
 # Latest owner release
 
-Start with [OWNER-AND-DEPLOY.md](OWNER-AND-DEPLOY.md) for current owner access and Netlify/backend setup. Checkout can now remain disabled while you manage real stock. The older sample-seeding instructions below are for isolated development only.
+Start with [OWNER-AND-DEPLOY.md](OWNER-AND-DEPLOY.md) for current owner access and Vercel/backend setup. Checkout can now remain disabled while you manage real stock. The older sample-seeding instructions below are for isolated development only.
 
 # Orẽva — Timeless elegance.
 

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "${BACKEND_ORIGIN}/api/$1",
+      "env": ["BACKEND_ORIGIN"]
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "${BACKEND_ORIGIN}/uploads/$1",
+      "env": ["BACKEND_ORIGIN"]
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

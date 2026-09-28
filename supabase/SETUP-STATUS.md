@@ -12,7 +12,7 @@ Verified in hosted PostgreSQL:
 - bagz-photos bucket is private.
 - No designated owner exists yet.
 
-Still needed: user creates their own email/password in Supabase Authentication > Users > Add user > Create new user. Designate the resulting UUID in bagz_private.owners, connect the cloud frontend and image adapter, test owner/non-owner access and uploads, then redeploy. The existing Netlify preview is not connected yet. Payments remain disabled. This catalogue migration is not the orders/payment migration.
+Still needed: user creates their own email/password in Supabase Authentication > Users > Add user > Create new user. Designate the resulting UUID in bagz_private.owners, connect the cloud frontend and image adapter, test owner/non-owner access and uploads, then redeploy. The current Vercel frontend is not connected to this Supabase setup. Payments remain disabled. This catalogue migration is not the orders/payment migration.
 
 ## Owner assignment update
-Applied 002_designated_owners.sql with user approval. Both confirmed accounts are now assigned: adetorooreoluwa27@gmail.com and enocheyitayo@gmail.com. Removed only the singleton primary-key constraint; existing unique user-ID constraint, foreign key and RLS remain. No products or accounts were deleted. Netlify cloud connection still pending.
+Applied 002_designated_owners.sql with user approval. Both confirmed accounts are now assigned: adetorooreoluwa27@gmail.com and enocheyitayo@gmail.com. Removed only the singleton primary-key constraint; existing unique user-ID constraint, foreign key and RLS remain. No products or accounts were deleted. Vercel-to-Supabase cloud connection still pending.
