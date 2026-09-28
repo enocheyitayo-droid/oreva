@@ -10,10 +10,12 @@
       "src": "/uploads/(.*)",
       "dest": "${BACKEND_ORIGIN}/uploads/$1",
       "env": ["BACKEND_ORIGIN"]
-    },
+    }
+  ],
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }
