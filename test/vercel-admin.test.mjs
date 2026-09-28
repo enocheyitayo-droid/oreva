@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import login from '../api/login.js';
-import me from '../api/admin/me.js';
-import overview from '../api/admin/overview.js';
-import saveProduct from '../api/admin/product.js';
+import admin from '../api/admin/[action].js';
+
+const me = (req, res) => admin({ ...req, query: { ...(req.query || {}), action: 'me' } }, res);
+const overview = (req, res) => admin({ ...req, query: { ...(req.query || {}), action: 'overview' } }, res);
+const saveProduct = (req, res) => admin({ ...req, query: { ...(req.query || {}), action: 'product' } }, res);
 import { supabase } from '../supabase-server.mjs';
 
 function response() {
