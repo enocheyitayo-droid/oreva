@@ -6,21 +6,7 @@ const json = (res, status, value) => {
   res.end(JSON.stringify(value));
 };
 
-function apiPath(url = '/') {
-  return new URL(url, 'https://vercel.invalid').pathname;
-}
-
 export default async function handler(req, res) {
-  const path = apiPath(req.url);
-
-  if (path === '/api/health' && req.method === 'GET') {
-    return json(res, 200, { ok: true, backend: 'vercel-function' });
-  }
-
-  if (path !== '/api/shop') {
-    return json(res, 503, { error: 'This store feature is not connected yet.' });
-  }
-
   if (req.method !== 'GET') {
     return json(res, 405, { error: 'Method not allowed' });
   }
@@ -70,5 +56,3 @@ export default async function handler(req, res) {
     return json(res, 502, { error: 'Could not reach the store database.' });
   }
 }
-
-export const config = { api: { bodyParser: false } };

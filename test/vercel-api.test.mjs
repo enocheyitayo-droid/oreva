@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/[...path].js';
+import handler from '../api/shop.js';
+import health from '../api/health.js';
 
 function response() {
   return {
@@ -9,6 +10,13 @@ function response() {
     end(body) { this.body = body; },
   };
 }
+
+test('Vercel health endpoint responds with JSON', () => {
+  const res = response();
+  health({}, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(JSON.parse(res.body), { ok: true, backend: 'vercel-function' });
+});
 
 test('Vercel catalogue endpoint reads the public Supabase RPC', async () => {
   const previous = { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_ANON_KEY, fetch: globalThis.fetch };
@@ -21,7 +29,7 @@ test('Vercel catalogue endpoint reads the public Supabase RPC', async () => {
   };
   try {
     const res = response();
-    await handler({ method: 'GET', url: '/api/shop' }, res);
+    await handler({ method: 'GET' }, res);
     assert.equal(res.statusCode, 200);
     assert.equal(request.url, 'https://project.supabase.co/rest/v1/rpc/bagz_catalogue');
     assert.equal(request.options.headers.apikey, 'public-test-key');
@@ -41,7 +49,7 @@ test('Vercel catalogue endpoint returns JSON when Supabase is not configured', a
   delete process.env.SUPABASE_ANON_KEY;
   try {
     const res = response();
-    await handler({ method: 'GET', url: '/api/shop' }, res);
+    await handler({ method: 'GET' }, res);
     assert.equal(res.statusCode, 503);
     assert.match(res.headers['Content-Type'], /application\/json/);
     assert.match(JSON.parse(res.body).error, /not configured/i);
