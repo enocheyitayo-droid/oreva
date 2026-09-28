@@ -26,7 +26,10 @@ export default functionHandler(async (req, res) => {
     photo: mediaUrl(product.photos?.[0] || ''),
     photos: (product.photos || []).map(mediaUrl),
     sample: false,
-    variants: byProduct.get(product.id) || [],
+    variants: (byProduct.get(product.id) || []).map(variant => ({
+      ...variant,
+      size: product.category === 'Bags' ? '' : variant.size,
+    })),
   }));
   const rawSettings = { ...defaults, ...(settingsRows?.[0]?.value || {}) };
   const settings = {

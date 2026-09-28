@@ -19,7 +19,7 @@ export default functionHandler(async (req, res) => {
     variants: data.variants.map(variant => ({
       ...(typeof variant.id === 'string' && variant.id ? { id: variant.id } : {}),
       colour: variant.colour,
-      size: variant.size,
+      size: data.category === 'Bags' ? 'One size' : variant.size,
       price: variant.price,
       cost: variant.cost,
       stock: variant.stock,

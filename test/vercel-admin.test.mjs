@@ -78,7 +78,7 @@ test('owner product save uses the Supabase transactional RPC and CSRF protection
     await saveProduct({
       method: 'POST',
       headers: { origin: 'https://oreva-ashy.vercel.app', cookie: 'oreva_access=access-token; oreva_csrf=csrf-token', 'x-csrf-token': 'csrf-token' },
-      body: { name: 'Everyday bag', description: 'Owner-entered item', category: 'Bags', visible: true, photo: '', photos: [], variants: [{ colour: 'Black', size: 'One size', price: 2500000, cost: 1200000, stock: 4 }] },
+      body: { name: 'Everyday bag', description: 'Owner-entered item', category: 'Bags', visible: true, photo: '', photos: [], variants: [{ colour: 'Black', size: 'Large', price: 2500000, cost: 1200000, stock: 4 }] },
     }, res);
     assert.equal(res.statusCode, 200);
     assert.deepEqual(JSON.parse(res.body), { id: 'product-id' });
@@ -89,8 +89,29 @@ test('owner product save uses the Supabase transactional RPC and CSRF protection
       const item = JSON.parse(options.body).item;
       assert.equal(item.name, 'Everyday bag');
       assert.equal(item.variants[0].stock, 4);
+      assert.equal(item.variants[0].size, 'One size');
       assert.equal(options.headers.Authorization, 'Bearer access-token');
       return jsonResponse('product-id');
+    }
+    throw new Error('Unexpected Supabase request: ' + url);
+  });
+});
+
+test('shoe product saves preserve the owner-entered shoe size', async () => {
+  await withSupabaseMock(async () => {
+    const res = response();
+    await saveProduct({
+      method: 'POST',
+      headers: { origin: 'https://oreva-ashy.vercel.app', cookie: 'oreva_access=access-token; oreva_csrf=csrf-token', 'x-csrf-token': 'csrf-token' },
+      body: { name: 'Everyday shoes', description: 'Owner-entered shoes', category: 'Shoes', visible: true, photo: '', photos: [], variants: [{ colour: 'Black', size: '38', price: 2500000, cost: 1200000, stock: 4 }] },
+    }, res);
+    assert.equal(res.statusCode, 200);
+  }, async (url, options) => {
+    if (String(url).endsWith('/auth/v1/user')) return jsonResponse({ id: 'owner-id' });
+    if (String(url).includes('/rpc/bagz_is_owner')) return jsonResponse(true);
+    if (String(url).includes('/rpc/bagz_save_product')) {
+      assert.equal(JSON.parse(options.body).item.variants[0].size, '38');
+      return jsonResponse('shoe-product-id');
     }
     throw new Error('Unexpected Supabase request: ' + url);
   });

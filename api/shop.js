@@ -75,6 +75,9 @@ export default async function handler(req, res) {
       ...product,
       photo: mediaUrl(product.photo),
       photos: (product.photos || []).map(mediaUrl),
+      variants: product.category === 'Bags'
+        ? (product.variants || []).map(variant => ({ ...variant, size: '' }))
+        : product.variants,
     }));
     return json(res, 200, data);
   } catch {
