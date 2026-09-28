@@ -9,7 +9,7 @@ async function readImage(req) {
   let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > 5 * 1024 * 1024) throw new ApiProblem('Image must be 5 MB or smaller.', 413);
+    if (size > 4 * 1024 * 1024) throw new ApiProblem('Image must be 4 MB or smaller.', 413);
     chunks.push(chunk);
   }
   return Buffer.concat(chunks);
@@ -26,7 +26,7 @@ export default functionHandler(async (req, res) => {
     if (!['jpeg', 'png', 'webp'].includes(metadata.format) || metadata.pages > 1) throw new Error('Unsupported image.');
     output = await image.rotate().resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true }).webp({ quality: 85 }).toBuffer();
   } catch {
-    throw new ApiProblem('Upload a valid JPEG, PNG or WebP image up to 5 MB and 24 megapixels.');
+    throw new ApiProblem('Upload a valid JPEG, PNG or WebP image up to 4 MB and 24 megapixels.');
   }
 
   const endpoint = new URL(process.env.SUPABASE_URL);

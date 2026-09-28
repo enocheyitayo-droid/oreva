@@ -1,4 +1,4 @@
-import { ApiProblem, functionHandler, mediaUrl, requireOwner, sendJson, supabase } from '../../supabase-server.mjs';
+import { ApiProblem, currentBrand, functionHandler, mediaUrl, requireOwner, sendJson, supabase } from '../../supabase-server.mjs';
 
 const defaults = {
   brand: 'Orẽva', logo: '/oreva-logo.jpg', tagline: 'Timeless elegance.', ownerEmail: '', whatsapp: '',
@@ -31,7 +31,7 @@ export default functionHandler(async (req, res) => {
       size: product.category === 'Bags' ? '' : variant.size,
     })),
   }));
-  const rawSettings = { ...defaults, ...(settingsRows?.[0]?.value || {}) };
+  const rawSettings = currentBrand({ ...defaults, ...(settingsRows?.[0]?.value || {}) });
   const settings = {
     ...rawSettings,
     logo: mediaUrl(rawSettings.logo),
@@ -41,6 +41,7 @@ export default functionHandler(async (req, res) => {
   };
   sendJson(res, 200, {
     products: mapped,
+    capabilities: { payments: false, orders: false, reports: false },
     settings,
     orders: [], notifications: [], expenses: [], refunds: [],
     report: { gross: 0, refunds: 0, revenue: 0, cost: 0, expenses: 0, estimatedProfit: 0, outstanding: 0 },

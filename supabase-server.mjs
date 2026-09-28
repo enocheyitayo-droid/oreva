@@ -70,10 +70,12 @@ export function parseBody(req) {
   return {};
 }
 
+function safeDecode(value) { try { return decodeURIComponent(value); } catch { return ''; } }
+
 function parseCookies(req) {
   return Object.fromEntries((req.headers.cookie || '').split(';').map(pair => {
     const index = pair.indexOf('=');
-    return index < 0 ? ['', ''] : [pair.slice(0, index).trim(), decodeURIComponent(pair.slice(index + 1).trim())];
+    return index < 0 ? ['', ''] : [pair.slice(0, index).trim(), safeDecode(pair.slice(index + 1).trim())];
   }).filter(([name]) => name));
 }
 
@@ -99,7 +101,7 @@ export function clearSessionCookies(res) {
 }
 
 function sameToken(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (typeof a !== 'string' || typeof b !== 'string' || !a || !b || a.length > 256 || b.length > 256) return false;
   const left = Buffer.from(a);
   const right = Buffer.from(b);
   return left.length === right.length && timingSafeEqual(left, right);
@@ -115,10 +117,11 @@ export async function requireOwner(req, res, { mutation = false } = {}) {
   }
 
   let accessToken = cookies.oreva_access;
+  let currentCsrf = cookies.oreva_csrf || randomBytes(24).toString('hex');
   if (!accessToken && cookies.oreva_refresh) {
     const session = await supabase('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: cookies.oreva_refresh } });
     accessToken = session.access_token;
-    setSessionCookies(res, session, cookies.oreva_csrf || randomBytes(24).toString('hex'));
+    setSessionCookies(res, session, currentCsrf);
   }
   if (!accessToken) throw new ApiProblem('Owner sign-in required.', 401);
 
@@ -126,7 +129,7 @@ export async function requireOwner(req, res, { mutation = false } = {}) {
     const user = await supabase('/auth/v1/user', { accessToken });
     const isOwner = await supabase('/rest/v1/rpc/bagz_is_owner', { method: 'POST', accessToken, body: {} });
     if (isOwner !== true) throw new ApiProblem('Owner access is required.', 403);
-    return { accessToken, user, csrf: cookies.oreva_csrf || '' };
+    return { accessToken, user, csrf: currentCsrf };
   } catch (error) {
     if (error.status === 401 && cookies.oreva_refresh) {
       const session = await supabase('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: cookies.oreva_refresh } });
@@ -176,4 +179,12 @@ export function functionHandler(handler) {
       });
     }
   };
+}
+
+export function currentBrand(settings) {
+ const result = {...settings};
+ if (['BAGZ & CO.','Bagz and co'].includes(result.brand)) result.brand='Orẽva';
+ if (result.logo==='/brand-logo.png') result.logo='/oreva-logo.jpg';
+ if (result.tagline==='Carry your story.') result.tagline='Timeless elegance.';
+ return result;
 }

@@ -1,4 +1,4 @@
-import { mediaUrl } from '../supabase-server.mjs';
+import { mediaUrl, currentBrand } from '../supabase-server.mjs';
 
 const json = (res, status, value) => {
   res.statusCode = status;
@@ -67,6 +67,7 @@ export default async function handler(req, res) {
     if (!data || typeof data !== 'object' || !data.settings || !Array.isArray(data.products)) {
       return json(res, 502, { error: 'Supabase returned an incomplete catalogue.' });
     }
+    data.settings = currentBrand(data.settings);
     data.settings.logo = mediaUrl(data.settings.logo);
     data.settings.bagDisplay = mediaUrl(data.settings.bagDisplay);
     data.settings.shoeDisplay = mediaUrl(data.settings.shoeDisplay);

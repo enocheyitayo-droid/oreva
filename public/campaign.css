@@ -21,3 +21,6 @@ body.home .topbar,body.home>.mode,.home #app>.mode{display:none}.home #main{max-
 @media(prefers-reduced-motion:reduce){.inspiration-track{animation:none;transform:none}.inspiration-track-group[aria-hidden=true]{display:none}}
 .rail-gallery-editor{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:14px;margin:20px 0}.rail-gallery-editor figure{margin:0;min-width:0}.rail-gallery-editor img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;background:#f5f3ef}.rail-gallery-editor figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px;font-size:12px}
 .gallery-management{margin:25px 0;padding:18px 0;border-top:1px solid #d8d5d0;border-bottom:1px solid #d8d5d0}.gallery-management-list{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}.gallery-management-item{width:140px}.gallery-management-item img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;background:#f5f3ef}.gallery-management-item button{margin-top:7px;width:100%}
+
+@media(prefers-reduced-motion:reduce){.inspiration-track,.inspiration-track-group{animation:none!important;transform:none!important}.inspiration-track{overflow-x:auto}.inspiration-track-group[aria-hidden=true]{display:none}}
+.inspiration-track:hover{animation-play-state:paused}
