@@ -1,4 +1,4 @@
-import {filterProducts,isSaved,enhanceStore,enhanceOrder,enhanceAdmin,showWishlist,showHelp,showTrack} from '/enhancements.js';
+import {filterProducts,isSaved,enhanceStore,enhanceOrder,enhanceAdmin,showWishlist,showHelp,showTrack} from '/enhancements.js?v=rail-only-2';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cash=n=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:2}).format(n/100);
