@@ -1,10 +1,17 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { ApiProblem } from './supabase-server.mjs';
 
+export function paystackMode() {
+  const secret = process.env.PAYSTACK_SECRET_KEY || '';
+  if (secret.startsWith('sk_live_')) return 'live';
+  if (secret.startsWith('sk_test_')) return 'test';
+  return 'disabled';
+}
+
 export function paystackSecret() {
   const secret = process.env.PAYSTACK_SECRET_KEY || '';
-  if (!secret.startsWith('sk_test_')) {
-    throw new ApiProblem('Checkout is not open. Add a Paystack test secret key in Vercel to enable test checkout.', 503);
+  if (!/^sk_(test|live)_/.test(secret)) {
+    throw new ApiProblem('Checkout is not open. Add a valid Paystack secret key in Vercel to enable checkout.', 503);
   }
   return secret;
 }
@@ -53,8 +60,9 @@ export async function verifyPaystack(reference) {
     throw new ApiProblem('Invalid payment reference.', 400);
   }
   const data = await paystack('/transaction/verify/' + encodeURIComponent(reference));
-  if (data.reference !== reference || data.domain !== 'test') {
-    throw new ApiProblem('Paystack verification did not match a test transaction.', 409);
+  const expectedDomain = paystackMode();
+  if (data.reference !== reference || data.domain !== expectedDomain) {
+    throw new ApiProblem('Paystack verification did not match this store payment mode.', 409);
   }
   return data;
 }

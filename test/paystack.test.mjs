@@ -14,9 +14,10 @@ async function withEnvironment(values, run) {
 
 const response = (data, status = 200) => new Response(JSON.stringify({ status: status < 400, data }), { status, headers: { 'Content-Type': 'application/json' } });
 
-test('checkout rejects missing or live Paystack keys', async () => {
-  await withEnvironment({}, async () => assert.throws(() => paystackSecret(), /test secret key/));
-  await withEnvironment({ PAYSTACK_SECRET_KEY: 'sk_live_not-allowed' }, async () => assert.throws(() => paystackSecret(), /test secret key/));
+test('checkout rejects missing keys and accepts test or live Paystack keys', async () => {
+  await withEnvironment({}, async () => assert.throws(() => paystackSecret(), /valid Paystack secret key/));
+  await withEnvironment({ PAYSTACK_SECRET_KEY: 'sk_test_fixture' }, async () => assert.equal(paystackSecret(), 'sk_test_fixture'));
+  await withEnvironment({ PAYSTACK_SECRET_KEY: 'sk_live_fixture' }, async () => assert.equal(paystackSecret(), 'sk_live_fixture'));
 });
 
 test('Paystack initialize accepts only hosted checkout URLs and matching reference', async () => {
@@ -40,7 +41,7 @@ test('verification rejects live-domain transactions even with a test key', async
   const original = globalThis.fetch;
   await withEnvironment({ PAYSTACK_SECRET_KEY: 'sk_test_fixture' }, async () => {
     globalThis.fetch = async () => response({ reference: 'ore_'+'a'.repeat(40), domain: 'live', status: 'success' });
-    try { await assert.rejects(verifyPaystack('ore_'+'a'.repeat(40)), /test transaction/); }
+    try { await assert.rejects(verifyPaystack('ore_'+'a'.repeat(40)), /payment mode/); }
     finally { globalThis.fetch = original; }
   });
 });
@@ -52,5 +53,17 @@ test('webhook signature verifies raw request bytes with the configured test key'
     assert.equal(validPaystackSignature(raw, signature), true);
     assert.equal(validPaystackSignature(Buffer.from('{}'), signature), false);
     assert.equal(validPaystackSignature(raw, 'f'.repeat(128)), false);
+  });
+});
+
+
+test('verification accepts a live-domain transaction with a live key', async () => {
+  const original = globalThis.fetch;
+  await withEnvironment({ PAYSTACK_SECRET_KEY: 'sk_live_fixture' }, async () => {
+    globalThis.fetch = async () => response({ reference: 'ore_'+'b'.repeat(40), domain: 'live', status: 'success' });
+    try {
+      const result = await verifyPaystack('ore_'+'b'.repeat(40));
+      assert.equal(result.domain, 'live');
+    } finally { globalThis.fetch = original; }
   });
 });

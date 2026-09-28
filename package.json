@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24.13.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "start": "node --env-file-if-exists=.env server.mjs",
-    "test": "node --test --test-isolation=none test/*.test.mjs",
+    "test": "node --test test/*.test.mjs",
     "owner": "node --env-file-if-exists=.env owner.mjs",
     "seed": "node --env-file-if-exists=.env seed.mjs",
     "backup": "node --env-file-if-exists=.env backup.mjs"
