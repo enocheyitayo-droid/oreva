@@ -1,3 +1,5 @@
+import { mediaUrl } from '../supabase-server.mjs';
+
 const json = (res, status, value) => {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -28,17 +30,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(new URL('/rest/v1/rpc/bagz_catalogue', origin), {
-      method: 'POST',
-      headers: {
-        apikey: anonKey,
-        Authorization: `Bearer ${anonKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: '{}',
-      signal: AbortSignal.timeout(10000),
-    });
-    const body = await response.text();
+    const [response, galleryResponse] = await Promise.all([
+      fetch(new URL('/rest/v1/rpc/bagz_catalogue', origin), {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${anonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+        signal: AbortSignal.timeout(10000),
+      }),
+      fetch(new URL('/rest/v1/rpc/bagz_storefront_gallery', origin), {
+        method: 'POST',
+        headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
+        body: '{}',
+        signal: AbortSignal.timeout(10000),
+      }).catch(() => null),
+    ]);
+    const [body, galleryBody] = await Promise.all([response.text(), galleryResponse ? galleryResponse.text() : Promise.resolve('[]')]);
     let data;
     try {
       data = JSON.parse(body);
@@ -48,9 +58,24 @@ export default async function handler(req, res) {
     if (!response.ok) {
       return json(res, 502, { error: 'Could not load the store catalogue.' });
     }
+    let gallery = [];
+    if (galleryResponse?.ok) {
+      try { gallery = JSON.parse(galleryBody); }
+      catch { gallery = []; }
+      if (!Array.isArray(gallery) || gallery.length > 8) gallery = [];
+    }
     if (!data || typeof data !== 'object' || !data.settings || !Array.isArray(data.products)) {
       return json(res, 502, { error: 'Supabase returned an incomplete catalogue.' });
     }
+    data.settings.logo = mediaUrl(data.settings.logo);
+    data.settings.bagDisplay = mediaUrl(data.settings.bagDisplay);
+    data.settings.shoeDisplay = mediaUrl(data.settings.shoeDisplay);
+    data.settings.displayGallery = gallery.map(mediaUrl);
+    data.products = data.products.map(product => ({
+      ...product,
+      photo: mediaUrl(product.photo),
+      photos: (product.photos || []).map(mediaUrl),
+    }));
     return json(res, 200, data);
   } catch {
     return json(res, 502, { error: 'Could not reach the store database.' });

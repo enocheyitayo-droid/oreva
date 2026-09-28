@@ -9,10 +9,10 @@ Requires Node.js 24.13 or newer. Run npm ci, copy .env.example to .env, then npm
 Extract this ZIP and upload its contents to your repository. Never commit .env, database files, uploads containing private data, node_modules or deployment credentials. The included .gitignore excludes these.
 
 ## Deployment status — read before importing
-The public frontend is hosted on Vercel. The first Vercel Function serves `/api/shop` from the Supabase `bagz_catalogue` RPC. Add `SUPABASE_URL` and `SUPABASE_ANON_KEY` to Vercel and redeploy to enable that route. Owner tools, uploads, orders and checkout are not yet migrated. The original local Node server uses SQLite and is not suitable for ephemeral serverless storage.
+The storefront and owner product/image APIs run as Vercel Functions backed by Supabase. Vercel needs `SUPABASE_URL` and `SUPABASE_ANON_KEY`. Run migrations 001, 002 (if not already applied), and 003 in Supabase before using owner product/image tools. Order management, persistent stock reservations, notifications and checkout are not yet migrated; the local Node server uses SQLite and is not suitable for ephemeral serverless storage.
 
 Vercel Hobby is restricted to personal non-commercial use. A business storefront requires a commercial-eligible plan; Pro currently starts at USD 20/month plus additional usage/taxes. See https://vercel.com/docs/limits/fair-use-guidelines . No paid plan has been purchased and no live payments are enabled.
 
-Vercel is not yet connected to the existing Supabase project until its environment variables are set. A Git push alone does not configure the database or enable checkout.
+The Vercel functions rely on the existing Supabase project and explicitly designated Supabase Auth owners. A Git push alone does not apply database migrations or enable checkout.
 
 Supabase migrations are included for reference. Do not rerun the already-applied initial migration. Hosted branding still needs updating when the cloud adapter is connected.
