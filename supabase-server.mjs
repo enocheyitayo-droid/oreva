@@ -48,7 +48,15 @@ export async function supabase(path, { method = 'GET', accessToken, body, header
   }
   if (!response.ok) {
     const status = response.status === 401 || response.status === 403 ? response.status : 502;
-    const message = status === 401 ? 'Please sign in again.' : status === 403 ? 'Owner access is required.' : 'Supabase request failed.';
+    const code = typeof data?.code === 'string' ? data.code : '';
+    let message = status === 401 ? 'Please sign in again.' : status === 403 ? 'Owner access is required.' : 'Supabase request failed.';
+    if (code === 'PGRST202' || code === '42883') {
+      message = 'Supabase is missing a required store function. Apply migration 003_store_media_and_settings.sql in the Supabase SQL Editor, then retry.';
+    } else if (code === '42501') {
+      message = 'Supabase denied this store change. Confirm your account is designated as an owner and migration 003_store_media_and_settings.sql is applied.';
+    } else if (code === '23514' || code === '22P02') {
+      message = 'Supabase rejected one of the store settings or image paths. Remove the invalid image and upload it again.';
+    }
     throw new ApiProblem(message, status);
   }
   return data;

@@ -4,6 +4,7 @@ import login from '../api/login.js';
 import me from '../api/admin/me.js';
 import overview from '../api/admin/overview.js';
 import saveProduct from '../api/admin/product.js';
+import { supabase } from '../supabase-server.mjs';
 
 function response() {
   return {
@@ -93,4 +94,13 @@ test('owner product save uses the Supabase transactional RPC and CSRF protection
     }
     throw new Error('Unexpected Supabase request: ' + url);
   });
+});
+
+test('missing Supabase settings RPC explains which migration to apply', async () => {
+  await withSupabaseMock(async () => {
+    await assert.rejects(
+      supabase('/rest/v1/rpc/bagz_save_settings', { method: 'POST', body: { settings: {} } }),
+      /Apply migration 003_store_media_and_settings\.sql/,
+    );
+  }, async () => jsonResponse({ code: 'PGRST202', message: 'function does not exist' }, 404));
 });
